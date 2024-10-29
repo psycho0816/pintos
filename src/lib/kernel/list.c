@@ -1,5 +1,6 @@
 #include "list.h"
 #include "../debug.h"
+#include "threads/thread.h"
 
 /** Our doubly linked lists have two header elements: the "head"
    just before the first element and the "tail" just after the
@@ -439,6 +440,16 @@ list_sort (struct list *list, list_less_func *less, void *aux)
   ASSERT (is_sorted (list_begin (list), list_end (list), less, aux));
 }
 
+/*compare two threads priority, return true when i is prior to o*/
+bool
+prio_cmp_func(struct list_elem *elem_i, struct list_elem *elem_o, void *aux)
+{
+  struct thread *thread_i = list_entry(elem_i, struct thread, elem);
+  struct thread *thread_o = list_entry(elem_o, struct thread, elem);
+
+  return thread_i->priority > thread_o->priority;
+}
+
 /** Inserts ELEM in the proper position in LIST, which must be
    sorted according to LESS given auxiliary data AUX.
    Runs in O(n) average case in the number of elements in LIST. */
@@ -452,9 +463,12 @@ list_insert_ordered (struct list *list, struct list_elem *elem,
   ASSERT (elem != NULL);
   ASSERT (less != NULL);
 
+  // e 遍历list中的所有进程，与elem的优先级进行比较
   for (e = list_begin (list); e != list_end (list); e = list_next (e))
     if (less (elem, e, aux))
+    // prio_cmp_func返回true的时候，说明elem的优先级比e大，所以此时可以把elem插入进程list中（顺序正确
       break;
+  // 循环结束就说明已经找到了正确的位置，把进程插入
   return list_insert (e, elem);
 }
 
