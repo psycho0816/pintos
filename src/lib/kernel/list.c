@@ -467,6 +467,7 @@ list_insert_ordered (struct list *list, struct list_elem *elem,
   for (e = list_begin (list); e != list_end (list); e = list_next (e))
     if (less (elem, e, aux))
     // prio_cmp_func返回true的时候，说明elem的优先级比e大，所以此时可以把elem插入进程list中（顺序正确
+    // if (prio_cmp_func(elem, e, aux))
       break;
   // 循环结束就说明已经找到了正确的位置，把进程插入
   return list_insert (e, elem);
