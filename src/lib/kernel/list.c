@@ -57,17 +57,6 @@ is_tail (struct list_elem *elem)
   return elem != NULL && elem->prev != NULL && elem->next == NULL;
 }
 
-/** Initializes LIST as an empty list. */
-void
-list_init (struct list *list)
-{
-  ASSERT (list != NULL);
-  list->head.prev = NULL;
-  list->head.next = &list->tail;
-  list->tail.prev = &list->head;
-  list->tail.next = NULL;
-}
-
 /** Returns the beginning of LIST.  */
 struct list_elem *
 list_begin (struct list *list)
@@ -161,21 +150,6 @@ list_tail (struct list *list)
 {
   ASSERT (list != NULL);
   return &list->tail;
-}
-
-/** Inserts ELEM just before BEFORE, which may be either an
-   interior element or a tail.  The latter case is equivalent to
-   list_push_back(). */
-void
-list_insert (struct list_elem *before, struct list_elem *elem)
-{
-  ASSERT (is_interior (before) || is_tail (before));
-  ASSERT (elem != NULL);
-
-  elem->prev = before->prev;
-  elem->next = before;
-  before->prev->next = elem;
-  before->prev = elem;
 }
 
 /** Removes elements FIRST though LAST (exclusive) from their
@@ -440,6 +414,33 @@ list_sort (struct list *list, list_less_func *less, void *aux)
   ASSERT (is_sorted (list_begin (list), list_end (list), less, aux));
 }
 
+/** Initializes LIST as an empty list. */
+void
+list_init (struct list *list)
+{
+  ASSERT (list != NULL);
+  list->head.prev = NULL;
+  list->head.next = &list->tail;
+  list->tail.prev = &list->head;
+  list->tail.next = NULL;
+}
+
+/** Inserts ELEM just before BEFORE, which may be either an
+   interior element or a tail.  The latter case is equivalent to
+   list_push_back(). */
+void
+list_insert (struct list_elem *before, struct list_elem *elem)
+{
+  ASSERT (is_interior (before) || is_tail (before));
+  ASSERT (elem != NULL);
+
+  elem->prev = before->prev;
+  elem->next = before;
+  before->prev->next = elem;
+  before->prev = elem;
+  // printf("list_insert success\n");
+}
+
 /*compare two threads priority, return true when i is prior to o*/
 bool
 prio_cmp_func(struct list_elem *elem_i, struct list_elem *elem_o, void *aux)
@@ -467,7 +468,6 @@ list_insert_ordered (struct list *list, struct list_elem *elem,
   for (e = list_begin (list); e != list_end (list); e = list_next (e))
     if (less (elem, e, aux))
     // prio_cmp_func返回true的时候，说明elem的优先级比e大，所以此时可以把elem插入进程list中（顺序正确
-    // if (prio_cmp_func(elem, e, aux))
       break;
   // 循环结束就说明已经找到了正确的位置，把进程插入
   return list_insert (e, elem);
